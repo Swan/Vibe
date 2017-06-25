@@ -1,0 +1,17 @@
+{
+  "name": "vibe",
+  "version": "1.0.0",
+  "description": "A Discord Bot for le vibro discord",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Swan",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^11.1.0",
+    "mongoose": "^4.10.8",
+    "rippleapi": "^1.0.6",
+    "ws": "^3.0.0"
+  }
+}
