@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const rippleAPI = require('rippleAPI');
+const rippleAPI = require('rippleapi');
 const config = require('../config/config.json');
 
 module.exports.newScore = async (client, newScoreData) => {
