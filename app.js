@@ -53,7 +53,7 @@ socket.onopen = (event) => {
         if (newMessage.type == "connected" || newMessage.type == "subscribed" || (newMessage.type == "new_score" && newMessage.data.play_mode == 3))
             console.log("Vibe: New Message Incoming: ", newMessage.type);
 
-        if (newMessage.type == "new_score" && newMessage.data.play_mode == 3 && newMessage.data.pp >= 600)
+        if (newMessage.type == "new_score" && newMessage.data.play_mode == 3 && newMessage.data.pp >= 0)
             newScore(client, newMessage.data);
 	};
 
