@@ -6,8 +6,13 @@ const tracking = require('./config/tracking.json');
 const _commands = require('./commands/_commands');
 
 const WebSocket = require('ws');
-const socket = new WebSocket('wss://api.ripple.moe/api/v1/ws');
+let socket;
 const { newScore } = require('./websocket/newscore');
+
+
+client.on('ready', client => {
+    startWebSocket();
+})
 
 client.on('message', message => {
     _commands.execute(client, message, socket);
@@ -34,32 +39,34 @@ client.login(config.token)
 /*
  * WebSocket
  */
-socket.onopen = (event) => {
+const startWebSocket = () => {
+    socket = new WebSocket('wss://api.ripple.moe/api/v1/ws');
+    socket.onopen = (event) => {
 
-    let trackingUsers = [];
-    tracking.tracking.forEach((user) => {
-        trackingUsers.push({user: user, modes: [3]})
-    });
+        let trackingUsers = [];
+        tracking.tracking.forEach((user) => {
+            trackingUsers.push({user: user, modes: [3]})
+        });
 
-    // Subscribe to all tracking user scores
-    let message = {type: 'subscribe_scores', data: trackingUsers}
+        // Subscribe to all tracking user scores
+        let message = {type: 'subscribe_scores', data: trackingUsers}
+        socket.send(JSON.stringify(message));
 
-    socket.send(JSON.stringify(message));
+        socket.onmessage = function(event) {
 
-	socket.onmessage = function(event) {
+            let newMessage = JSON.parse(event.data);
 
-        let newMessage = JSON.parse(event.data);
+            if (newMessage.type == "connected" || newMessage.type == "subscribed" || (newMessage.type == "new_score" && newMessage.data.play_mode == 3))
+                console.log("Vibe: New Message Incoming: ", newMessage.type);
 
-        if (newMessage.type == "connected" || newMessage.type == "subscribed" || (newMessage.type == "new_score" && newMessage.data.play_mode == 3))
-            console.log("Vibe: New Message Incoming: ", newMessage.type);
+            if (newMessage.type == "new_score" && newMessage.data.play_mode == 3 && newMessage.data.pp >= 600)
+                newScore(client, newMessage.data);
+        };
 
-        if (newMessage.type == "new_score" && newMessage.data.play_mode == 3 && newMessage.data.pp >= 600)
-            newScore(client, newMessage.data);
-	};
-
-	// If socket closes, just throw an error for now.
-	socket.onclose = function(event) {
-		throw new Error('Socket Closed.');
-	};
-	
+        // If socket closes, just throw an error for now.
+        socket.onclose = function(event) {
+            startWebSocket();
+            console.log("Socket closed, Reconnecting to Websocket.");
+        };    
+    }
 }
