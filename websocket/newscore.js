@@ -17,20 +17,11 @@ module.exports.newScore = async (client, newScoreData) => {
                     .setThumbnail(`https://a.ripple.moe/${newScoreData.user_id}`)
                     .addField('Details', `User: **${userInfo.username}** has submitted a **${addCommas(Math.trunc(newScoreData.pp))}pp** score!`, false)
                     .addField('Beatmap', `[${beatmapInfo.beatmap.song_name}](https://eggplants.org/b/${beatmapInfo.beatmap.beatmap_id})`, false)
-                    .addField('Profile', `[Profile](https://ripple.moe/u/${newScoreData.user_id}})`, true)
+                    .addField('Profile', `[Profile](https://ripple.moe/u/${newScoreData.user_id})`, true)
                     .addField('Replay', `[Replay](https://ripple.moe/web/replays/${newScoreData.id})`, true)
                     .addField('PP', `${addCommas(Math.trunc(newScoreData.pp))}`, true)
-                    .addField('Accuracy', `${newScoreData.accuracy}%`, true)
-                    .addField('Rank', `${newScoreData.rank}`, true)
-                    .addField('Score', `${addCommas(newScoreData.score)}`, true)
-                    .addField('Max Combo', `${addCommas(newScoreData.max_combo)}`, true)
-                    .addField('Full Combo', `${newScoreData.full_combo}`, true)
-                    .addField('MAX 300s', `${addCommas(newScoreData.count_geki)}`, true)
-                    .addField('300s', `${addCommas(newScoreData.count_300)}`, true)
-                    .addField('200s', `${addCommas(newScoreData.count_katu)}`, true)
-                    .addField('100s', `${addCommas(newScoreData.count_100)}`, true)
-                    .addField('50s', `${addCommas(newScoreData.count_50)}`, true)
-                    .addField('Misses', `${addCommas(newScoreData.count_miss)}`, true))
+                    .addField('Rank/Acc/Score/Combo', `${newScoreData.rank}/${newScoreData.accuracy}%/${addCommas(newScoreData.score)}/${addCommas(newScoreData.max_combo)}`, true)
+                    .addField('Acc Spread', `${addCommas(newScoreData.count_geki)}/${addCommas(newScoreData.count_300)}/${addCommas(newScoreData.count_katu)}/${addCommas(newScoreData.count_100)}/${addCommas(newScoreData.count_50)}/${addCommas(newScoreData.count_miss)}`, true))
         }
     }
 
