@@ -9,11 +9,10 @@ const config = require('../config/config.json');
 module.exports.map = async (client, message, args) => {
     try {
         let beatmap = args[0];
-        if (!beatmap.includes("osu.ppy.sh/b/")) message.reply("You need to provide a valid osu! beatmap link.");
+        if (!beatmap.includes("osu.ppy.sh/b/")) return message.reply("You need to provide a valid osu! beatmap link.");
         
         beatmap = beatmap.substring(beatmap.indexOf('/b/') + 3);
         if (beatmap.includes('&m=3')) beatmap = beatmap.replace('&m=3', '');
-        console.log(beatmap);
 
         const api = new nodesu.Client(config.osuAPIKey);
         let beatmapData = await api.beatmaps.getByBeatmapId(beatmap);
