@@ -9,7 +9,7 @@ const config = require('../config/config.json');
 module.exports.map = async (client, message, args) => {
     try {
         let beatmap = args[0];
-        if (!beatmap.includes("osu.ppy.sh/b/")) return message.reply("You need to provide a valid osu! beatmap link.");
+        if (!beatmap.includes("osu.ppy.sh/b/")) return message.reply("You need to provide a valid osu! beatmap link. **/b/**");
         
         beatmap = beatmap.substring(beatmap.indexOf('/b/') + 3);
         if (beatmap.includes('&m=3')) beatmap = beatmap.replace('&m=3', '');
