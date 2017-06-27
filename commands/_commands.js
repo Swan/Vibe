@@ -3,6 +3,7 @@ const config = require('../config/config.json');
 const { ripple } = require('./ripple');
 const { track } = require('./track');
 const { map } = require('./map');
+const { pp } = require('./pp');
 
 module.exports.execute = (client, message, socket) => {
     if (message.author.bot) return;
@@ -23,6 +24,9 @@ module.exports.execute = (client, message, socket) => {
             break;
         case 'map':
             map(client, message, args);
+            break;
+        case 'pp':
+            pp(client, message, args);
             break;
     }
 };
