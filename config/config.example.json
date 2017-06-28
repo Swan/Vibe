@@ -6,5 +6,6 @@
     "commandPrefix": ";",
     "ownerId": "",
     "trackingChannel": "",
-    "osuAPIKey": ""
+    "osuAPIKey": "",
+    "mapTrackingChannel": ""
 }

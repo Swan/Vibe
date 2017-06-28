@@ -8,10 +8,12 @@ const _commands = require('./commands/_commands');
 const WebSocket = require('ws');
 let socket;
 const { newScore } = require('./websocket/newscore');
+const { trackMaps } = require('./handlers/trackmaps');
 
 
-client.on('ready', client => {
+client.on('ready', () => {
     startWebSocket();
+    trackMaps(client);
 })
 
 client.on('message', message => {
