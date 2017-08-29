@@ -3,6 +3,7 @@ import * as config from '../config/config.json';
 import { ripple } from './ripple';
 import { osu } from './osu';
 import { checkMap } from './map';
+import { pp } from './pp';
 
 export async function execute(client, message) {
     try {
@@ -23,6 +24,9 @@ export async function execute(client, message) {
             case 'map':
                 console.log(`[VIBE - COMMANDS] User ${message.author} executed command: ${command}`);
                 return await checkMap(client, message, args);
+            case 'pp':
+                console.log(`[VIBE - COMMANDS] User ${message.author} executed command: ${command}`);
+                return await pp(client, message, args);
         }
 
     } catch (err) {
