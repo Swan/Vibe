@@ -1,6 +1,6 @@
 import { randomColor } from 'randomcolor';
 
-export async function ripple(client, message, args) {
+export async function osu(client, message, args) {
     try {
         if (args.length == 0) return await message.reply("Please specify the user you want me to lookup.");
 
@@ -8,7 +8,7 @@ export async function ripple(client, message, args) {
 
         const channel = await client.channels.get(message.channel.id);
         const hex = randomColor().replace("#", "");
-        return channel.sendMessage(`http://sig.ripple.moe/sig.php?colour=hex${hex}&uname=${username}&mode=3&pp=0&countryrank`);
+        return channel.sendMessage(`http://lemmmy.pw/osusig/sig.php?colour=hex${hex}&uname=${username}&mode=3&pp=1&countryrank`);
 
     } catch (err) {
         console.log(err);

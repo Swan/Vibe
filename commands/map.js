@@ -1,105 +1,94 @@
-const Discord = require('discord.js');
-const wifipiano2 = require('wifipiano2');
-const nodesu = require('nodesu');
-const parser = require('osu-parser');
+import * as config from '../config/config.json';
+import * as axios from 'axios';
+import * as parser from 'osu-parser';
+import * as wifipiano2 from 'wifipiano2';
+import * as Discord from 'discord.js';
+import * as utils from '../utils/utils';
 const download = require('download-file');
 const fs = require('fs');
-const config = require('../config/config.json');
 
-module.exports.map = async (client, message, args) => {
+export async function checkMap(client, message, args) {
     try {
         let beatmap = args[0];
-        if (!beatmap.includes("osu.ppy.sh/b/")) return message.reply("You need to provide a valid osu! beatmap link. **/b/**");
-        
+        if (!beatmap.includes("osu.ppy.sh/b/")) return await message.reply("You need to provide a valid osu beatmap link **/b/**");
+
         beatmap = beatmap.substring(beatmap.indexOf('/b/') + 3);
-        if (beatmap.includes('&m=3')) beatmap = beatmap.replace('&m=3', '');
 
-        const api = new nodesu.Client(config.osuAPIKey);
-        let beatmapData = await api.beatmaps.getByBeatmapId(beatmap);
-        beatmapData = beatmapData[0];
+        const modeIdentifier = '&m=3';
+        if (beatmap.includes(modeIdentifier)) beatmap = beatmap.replace(modeIdentifier, '');
 
-       if (beatmapData.mode != 3) return message.reply("I only take mania beatmaps, buddy.");
+        const response = await axios.get(`https://osu.ppy.sh/api/get_beatmaps?k=${config.osuAPIKey}&b=${beatmap}`);
+        const bmData = response.data[0];
 
-       let options  = {
-           directory: './parsing/',
-           filename: `${beatmap}.osu`
-       };
+        if (bmData.mode != 3) return await message.reply("I only take mania beatmaps, sorry.");
 
-       // Download beatmap.osu, parse it, and find the number of objects.  
-       download(`http://osu.ppy.sh/osu/${beatmap}`, options, (err) => {
-            if (err) return message.reply("Could not get pp data for that beatmap.");
-            parser.parseFile(options.directory + options.filename, (err, bm) => {
-                if (err) console.log(err);
-                
-                // Calculate pp for 90%, 95%, 98%, 99%, 100%
-                let ninetyPercent = wifipiano2.calculate({
-                        starRating: beatmapData.difficultyrating, 
-                        overallDifficulty: beatmapData.diff_overall, 
-                        objects: bm.hitObjects.length,
-                        mods: 'none',
-                        score: 680000,
-                        accuracy: 90.00
-                    });
+        const beatmapPath = await downloadBeatmap(beatmap);
+        const performancePoints = await getPerformancePoints(beatmapPath, bmData);
 
-                let ninetyFivePercent = wifipiano2.calculate({
-                        starRating: beatmapData.difficultyrating, 
-                        overallDifficulty: beatmapData.diff_overall, 
-                        objects: bm.hitObjects.length,
-                        mods: 'none',
-                        score: 840000,
-                        accuracy: 95.00
-                    });
+        // Delete the beatmap after getting the performance points data
+        fs.unlinkSync(beatmapPath);
 
-                let ninetyEightPercent = wifipiano2.calculate({
-                        starRating: beatmapData.difficultyrating, 
-                        overallDifficulty: beatmapData.diff_overall, 
-                        objects: bm.hitObjects.length,
-                        mods: 'none',
-                        score: 920000,
-                        accuracy: 98.00
-                    });
+        // Send the data back to the discord server.
+        const channel = client.channels.get(message.channel.id);
+        channel.sendEmbed(getMapEmbed(bmData, performancePoints));
 
-                let ninetyNinePercent = wifipiano2.calculate({
-                        starRating: beatmapData.difficultyrating, 
-                        overallDifficulty: beatmapData.diff_overall, 
-                        objects: bm.hitObjects.length,
-                        mods: 'none',
-                        score: 960000,
-                        accuracy: 99.00
-                    });
-
-                let hundredPercent = wifipiano2.calculate({
-                        starRating: beatmapData.difficultyrating, 
-                        overallDifficulty: beatmapData.diff_overall, 
-                        objects: bm.hitObjects.length,
-                        mods: 'none',
-                        score: 1000000,
-                        accuracy: 100.00
-                    });
-
-
-                client.channels.get(message.channel.id)
-                                .sendEmbed(new Discord.RichEmbed()
-                                    .setTitle(`Displaying information for beatmap: ${beatmap}`)
-                                    .setColor(0xDB88C2)
-                                    .setThumbnail(`https://b.ppy.sh/thumb/${beatmapData.beatmapset_id}l.jpg`)
-                                    .addField('Beatmap', `[${beatmapData.artist} - ${beatmapData.title} [${beatmapData.version}] (${beatmapData.creator})](https://osu.ppy.sh/b/${beatmap})`)
-                                    .addField('Stars/BPM', `${(Math.floor(beatmapData.difficultyrating * 100) / 100)}*/${beatmapData.bpm}bpm`, true)
-                                    .addField('PP', `**90%, 680k**: ${addCommas((Math.floor(ninetyPercent * 100) / 100))}pp \n` +
-                                                    `**95%, 840k**: ${addCommas((Math.floor(ninetyFivePercent * 100) / 100))}pp \n` +
-                                                    `**98%, 920k**: ${addCommas((Math.floor(ninetyEightPercent * 100) / 100))}pp \n`  +
-                                                    `**99%, 960k**: ${addCommas((Math.floor(ninetyNinePercent * 100) / 100))}pp \n`  +                                          
-                                                    `**100%, 1000k**: ${addCommas((Math.floor(hundredPercent * 100) / 100))}pp`, true))                
-                })
-                setTimeout(() => fs.unlinkSync(options.directory + options.filename), 5000);
-       });
-
-    } catch (e) {
-        message.reply("Unable to get pp for the map you've given.");
-        console.log(e);
+    } catch (err) {
+        console.log(err);
+        return await message.reply("Unable to get beatmap data.");
     }
+}
+
+
+// Downloads a .osu file from the osu! website and resolves a file path. 
+const downloadBeatmap = (beatmap) => {
+    return new Promise((resolve, reject) => {
+        const options = {
+            directory: './parsing/',
+            filename: `${beatmap}.osu`
+        };
+
+        download(`https://osu.ppy.sh/osu/${beatmap}`, options, (err) => {
+            if (err) reject(err);
+
+            // If all is well with the download, resolve the promise with the .osu file path.
+            resolve(options.directory + options.filename);     
+        });
+    });
 };
 
-const addCommas = (x) => {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
+
+// Takes a mania .osu file and calculates the performance points for 100% Accuracy + 1000k Score.
+const getPerformancePoints = (beatmapPath, beatmapData) => {
+    return new Promise((resolve, reject) => {
+        parser.parseFile(beatmapPath, (err, beatmap) => {
+            if (err) reject(err);
+
+            const performancePoints = wifipiano2.calculate({
+                starRating: beatmapData.difficultyrating,
+                overallDifficulty: beatmapData.diff_overall,
+                objects: beatmap.hitObjects.length,
+                mods: 'none',
+                score: 1000000,
+                accuracy: 100.00
+            });
+
+            resolve(Math.round(performancePoints));
+        });
+    });
+};
+
+
+// Compiles the beatmap and performance points data into a Discord RichEmbed
+const getMapEmbed = (beatmapData, pp) => {
+    const hex = utils.randomHex();
+    return new Discord.RichEmbed()
+        .setTitle(`Displaying information for beatmap: ${beatmapData.beatmap_id}`)
+        .setColor(hex)
+        .setThumbnail(`https://b.ppy.sh/thumb/${beatmapData.beatmapset_id}l.jpg`)
+        .addField('Beatmap', `[${beatmapData.artist} - ${beatmapData.title} [${beatmapData.version}] (${beatmapData.creator})](https://osu.ppy.sh/b/${beatmapData.beatmap_id})`)
+        .addField('Stars/BPM', `${(Math.floor(beatmapData.difficultyrating * 100) / 100)}*/${beatmapData.bpm}bpm`, true)       
+        .addField('Max Performance Points', `**${pp}pp**`, true)
+        .addField(`Keys`, `**${beatmapData.diff_size}**`, true)
+        .addField(`Favorites`, `**${beatmapData.favourite_count}**`, true)
+        .addField(`Tags`, `**${beatmapData.tags}**`);
+};

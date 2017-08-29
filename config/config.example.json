@@ -1,11 +1,16 @@
 {
-    "token": "",
-    "db": "",
-    "playingGame": "Keyboard Smashing",
-    "defaultStatus": "dnd",
-    "commandPrefix": ";",
     "ownerId": "",
-    "trackingChannel": "",
+    "botToken": "",
+    "defaultStatus": "idle",
+    "playingGame": "Star Burst 3",
+    "commandPrefix": "-",
+    "websocket": "wss://api.ripple.moe/api/v1/ws",
     "osuAPIKey": "",
-    "mapTrackingChannel": ""
+    "topScores": {
+        "minPP": 1,
+        "channel": "",
+        "users": [
+
+        ]
+    }
 }
