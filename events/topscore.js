@@ -32,7 +32,7 @@ const getTopScoreEmbed = (scoreData, beatmap, leaderboardRank) => {
     const hex = utils.randomHex();
 
     return new Discord.RichEmbed()
-        .setTitle(`New ${Math.round(scoreData.pp)}pp (#${leaderboardRank + 1}) score submitted by: ${scoreData.user.username}`)
+        .setTitle(`New ${utils.addCommas(Math.round(scoreData.pp))}pp (#${leaderboardRank + 1}) score submitted by: ${scoreData.user.username}`)
         .setColor(hex)
         .setThumbnail(`https://a.ripple.moe/${scoreData.user.id}`)
         .addField(`Beatmap`, `[${beatmap.artist} - ${beatmap.title} [${beatmap.version}] (${beatmap.creator})](https://osu.ppy.sh/b/${beatmap.beatmap_id})`, false)
