@@ -12,5 +12,9 @@
         "users": [
 
         ]
+    },
+    "roles": {
+        "vibro": "",
+        "notVibro": ""
     }
 }

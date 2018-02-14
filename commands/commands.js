@@ -4,6 +4,7 @@ import { ripple } from './ripple';
 import { osu } from './osu';
 import { checkMap } from './map';
 import { pp } from './pp';
+import { iam, iamnot } from './iam';
 
 export async function execute(client, message) {
     try {
@@ -27,6 +28,12 @@ export async function execute(client, message) {
             case 'pp':
                 console.log(`[VIBE - COMMANDS] User ${message.author} executed command: ${command}`);
                 return await pp(client, message, args);
+            case 'iam':
+                console.log(`[VIBE - COMMANDS] User ${message.author} executed command: ${command}`);
+                return await iam(client, message, args);
+            case "iamnot":
+            console.log(`[VIBE - COMMANDS] User ${message.author} executed command: ${command}`);
+            return await iamnot(client, message, args);
         }
 
     } catch (err) {
